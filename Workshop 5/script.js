@@ -20,6 +20,46 @@ animalForm.addEventListener("submit", function (event) {
   // TODO: If valid, show the result / Näytä hyväksytty tulos.
   // TODO: Create { name, species, note } and save it as JSON.
   // TODO: Luo { name, species, note } ja tallenna se JSON-tekstinä.
+  nameError.textContent = "";
+  speciesError.textContent = "";
+  noteError.textContent = "";
+  formResult.textContent = "";
+
+  const nameValue = animalName.value.trim();
+  const speciesValue = animalSpecies.value.trim();
+  const noteValue = careNote.value.trim();
+
+  let isValid = true;
+
+  if (nameValue === "") {
+    nameError.textContent = "Eläimen nimi ei voi olla tyhjä.";
+    animalName.classList.add("invalid");
+    isValid = false;
+  }
+
+  if (speciesValue === "") {
+    speciesError.textContent = "Laji ei voi olla tyhjä.";
+    animalSpecies.classList.add("invalid");
+    isValid = false;
+  }
+
+  if (noteValue.length < 1 || noteValue.length > 150) {
+    noteError.textContent = "Hoitomuistion pituuden pitää olla 1–150 merkkiä.";
+    careNote.classList.add("invalid");
+    isValid = false;
+  }
+
+  if (isValid) {
+    formResult.textContent = `Lisätty: ${nameValue} / ${speciesValue} / ${noteValue}`;
+
+    const animalData = {
+      name: nameValue,
+      species: speciesValue,
+      note: noteValue
+    };
+
+    localStorage.setItem("ws05Animal", JSON.stringify(animalData));
+  }
 });
 
 // Exercise 2 / Harjoitus 2
@@ -36,6 +76,31 @@ sponsorForm.addEventListener("submit", function (event) {
   // TODO: Calculate the price and apply discounts.
   // TODO: Laske hinta ja alennukset.
   // TODO: Show the result / Näytä tulos.
+
+  const yearlyFee = Number(animalType.value);
+  const years = Number(yearsInput.value);
+
+  if (!Number.isInteger(years) || years < 1) {
+    cost.textContent = "Virhe: Syötä positiivinen kokonaisvuosi.";
+    discountMessage.textContent = "";
+    return;
+  }
+
+  let totalPrice = yearlyFee * years;
+  let discountInfo = "";
+
+  if (years > 2) {
+    totalPrice = totalPrice * 0.8;
+    discountInfo = "20 % alennus myönnetty.";
+  }
+
+  if (years >= 5) {
+    totalPrice = totalPrice - 5;
+    discountInfo += " Lisäksi 5 € lisäalennus myönnetty vähintään 5 vuoden sponsoroinnista.";
+  }
+
+  cost.textContent = `Yhteensä: ${totalPrice.toFixed(2)} €`;
+  discountMessage.textContent = discountInfo;
 });
 
 // Exercise 4 / Harjoitus 4
@@ -48,13 +113,26 @@ function loadAnimal() {
   // TODO: Lue ws05Animal. Tarkista null ennen JSON.parse()-muunnosta.
   // TODO: Display name, species and note with textContent.
   // TODO: Näytä nimi, laji ja muistio textContent-ominaisuudella.
+  const data = localStorage.getItem("ws05Animal");
+
+  if (data === null) {
+    savedAnimal.textContent = "Ei vielä tallennettua eläintä";
+    return;
+  }
+
+  const animal = JSON.parse(data);
+  savedAnimal.textContent = `Nimi: ${animal.name}\nLaji: ${animal.species}\nMuistio: ${animal.note}`;
 }
+
 
 loadButton.addEventListener("click", loadAnimal);
 clearButton.addEventListener("click", function () {
   // TODO: Remove ws05Animal and update the displayed result.
   // TODO: Poista ws05Animal ja päivitä sivulla näkyvä tulos.
+  localStorage.removeItem("ws05Animal");
+  savedAnimal.textContent = "Ei vielä tallennettua eläintä";
 });
 
 // TODO: Call loadAnimal() here to restore data when the page opens.
 // TODO: Kutsu loadAnimal() tässä, jotta tiedot palautuvat sivun avautuessa.
+loadAnimal();
